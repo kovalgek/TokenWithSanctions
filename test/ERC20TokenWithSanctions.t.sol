@@ -14,6 +14,9 @@ contract ERC20TokenWithSanctionsTest is Test {
     error ErrorSenderBanned(address);
     error ErrorRecipientBanned(address);
 
+    event AddressBanned(address indexed account);
+    event AddressUnbanned(address indexed account);
+
     ERC20TokenWithSanctions public token;
 
     function setUp() public {
@@ -24,8 +27,14 @@ contract ERC20TokenWithSanctionsTest is Test {
     function test_Ban() public {
         assertFalse(token.isBanned(sender));
 
+	    vm.expectEmit();
+        emit AddressBanned(sender);
+
         token.banAddress(sender);
         assertTrue(token.isBanned(sender));
+
+	    vm.expectEmit();
+        emit AddressUnbanned(sender);
 
         token.unbanAddress(sender);
         assertFalse(token.isBanned(sender));
@@ -67,7 +76,7 @@ contract ERC20TokenWithSanctionsTest is Test {
         token.banAddress(sender);
 
         vm.prank(sender);
-        token.approve(thirdParty, tokensToTransfer);
+        token.approve(thirdParty, 1);
 
         vm.expectRevert(abi.encodeWithSelector(ErrorSenderBanned.selector, sender));
         vm.prank(thirdParty);
@@ -78,7 +87,7 @@ contract ERC20TokenWithSanctionsTest is Test {
         token.banAddress(receiver);
 
         vm.prank(sender);
-        token.approve(thirdParty, tokensToTransfer);
+        token.approve(thirdParty, 1);
 
         vm.expectRevert(abi.encodeWithSelector(ErrorRecipientBanned.selector, receiver));
         vm.prank(thirdParty);
