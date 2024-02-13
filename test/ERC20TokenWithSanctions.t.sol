@@ -66,6 +66,9 @@ contract ERC20TokenWithSanctionsTest is Test {
     function test_TransferFromBannedSender() public {
         token.banAddress(sender);
 
+        vm.prank(sender);
+        token.approve(thirdParty, tokensToTransfer);
+
         vm.expectRevert(abi.encodeWithSelector(ErrorSenderBanned.selector, sender));
         vm.prank(thirdParty);
         token.transferFrom(sender, receiver, 1);
@@ -73,6 +76,9 @@ contract ERC20TokenWithSanctionsTest is Test {
 
     function test_TransferFromBannedReceiver() public {
         token.banAddress(receiver);
+
+        vm.prank(sender);
+        token.approve(thirdParty, tokensToTransfer);
 
         vm.expectRevert(abi.encodeWithSelector(ErrorRecipientBanned.selector, receiver));
         vm.prank(thirdParty);
